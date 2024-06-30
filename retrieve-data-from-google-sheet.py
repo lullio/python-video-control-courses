@@ -56,7 +56,7 @@ def get_data_from_google_sheet(url_data):
         # Criando uma ListView com scroll vertical
         tree = ttk.Treeview(root, columns=("col1", "col2", "col3", "col4", "col5", "col6", "col7"), show="headings")
         tree.heading("col1", text="Index")
-        tree.heading("col2", text="Curso")
+        tree.heading("col2", text="Cursos")
         tree.heading("col3", text="URL")
         tree.heading("col4", text="Categorias")
         tree.heading("col5", text="Plataforma")
@@ -82,19 +82,39 @@ def get_data_from_google_sheet(url_data):
         for col in tree["columns"]:
             tree.column(col, width=1, minwidth=1, anchor="w")  # Define largura mínima e colocar o conteúdo na esquerda(="w") ou centraliza conteúdo(CENTER)
             tree.heading(col, anchor="w")  # Centraliza o texto do cabeçalho
-        tree.column(1, width=300, minwidth=300, anchor="w" )
+        tree.column(1, width=400, minwidth=400, anchor="w" )
         
          # Dropdown para filtrar por valores da coluna 4
+         
+        # Frame para conter os widgets (Label e Combobox). Isso ajuda na organização e posicionamento dos elementos na interface.
+        frame = tk.Frame(root)
+        frame.pack(padx=5, pady=10)
+        
+        # PRIMEIRA LINHA
+        # Texto à esquerda (Label)
+        col4_filter_label = tk.Label(frame, text="Filtrar por Categoria:")
+        col4_filter_label.grid(row=0, column=0, padx=(0, 10), sticky="w", pady=10)  # Alinha à esquerda com padding à direita
+        # col4_filter_label.pack(side=tk.LEFT, padx=(0, 10))  # Alinha à esquerda com padding à direita
+        
+        # Combobox à direita
         col4_values = sorted(list(unique_col4_values))
         col4_filter_var = tk.StringVar(root)
         col4_filter_var.set("Todos")  # Define o valor padrão como "Todos"
+        col4_filter_dropdown = ttk.Combobox(frame, textvariable=col4_filter_var, values=["Todos"] + col4_values, state="readonly", width=27)
+        col4_filter_dropdown.grid(row=0, column=1, sticky="w")  # Alinha à esquerda
+        # col4_filter_dropdown.pack(side=tk.LEFT)  # Alinha à esquerda
         
-        col4_filter_label = tk.Label(root, text="Filtrar por Coluna 4:")
-        col4_filter_label.pack(pady=10)
         
-        col4_filter_dropdown = ttk.Combobox(root, textvariable=col4_filter_var, values=["Todos"] + col4_values, state="readonly")
-        col4_filter_dropdown.pack()
+        # SEGUNDA LINHA
+        # Label do campo de pesquisa
+        search_label = tk.Label(frame, text="Pesquisar:")
+        search_label.grid(row=1, column=0, padx=(0, 10), sticky="w")  # Alinha à esquerda com padding à direita
         
+        # Campo de pesquisa com regex
+        search_var = tk.StringVar()
+        search_entry = tk.Entry(frame, textvariable=search_var, width=30)
+        search_entry.grid(row=1, column=1, sticky="we", padx=(0, 10))  # Preenche horizontalmente e alinha à esquerda
+        #search_entry.pack(pady=10)
         # Função para filtrar os dados da Treeview com base no valor selecionado no dropdown
         def filter_data_with_combobox(event=None):
             selected_value = col4_filter_var.get()
@@ -113,10 +133,7 @@ def get_data_from_google_sheet(url_data):
         
         col4_filter_dropdown.bind("<<ComboboxSelected>>", filter_data_with_combobox)  # Liga o evento de seleção do combobox
         
-        # Campo de pesquisa com regex
-        search_var = tk.StringVar()
-        search_entry = tk.Entry(root, textvariable=search_var, width=30)
-        search_entry.pack(pady=10)
+
         
         def filter_data_with_search(event=None):
             query = search_var.get()
@@ -152,37 +169,240 @@ def get_data_from_google_sheet(url_data):
         print(f"Erro ao obter dados da planilha. Código de status: {response.status_code}")
         return None
  
-def minha_funcao():
-    # Injetar e executar JavaScript no contexto da página
-    print("hello")
-    script = '''
-    // Exemplo de código JavaScript
-    alert("Olá! Esta é uma mensagem de alerta injetada via Python e Selenium.");
-
-    function sayHello(name) {
-        console.log("Hello, " + name + "!");
-    }
-
-    // Chamando a função
-    sayHello("Alice");
-    '''
-    driver.execute_script(script)
-# Função para associar a hotkey
-def associar_hotkey():
-    keyboard.add_hotkey('ctrl+i', minha_funcao) 
  
-
+ 
 # URL da planilha do Google Sheets
 url_data = "https://docs.google.com/spreadsheets/d/1Fg4cP6VEjQ5Ke8LCTSo88dUdZlc1az2RpBC6Bu6YuSw/gviz/tq?tqx=out:csv&range=A2:G80&sheet=Cursos"
 
 # Associar a hotkey quando o script é executado
-associar_hotkey()
 # Chamada da função para obter os dados
 planilha_data = get_data_from_google_sheet(url_data)
-
-
 # Exibição dos dados (opcional)
-print(planilha_data)
+print(planilha_data) 
+ 
+ 
+ 
+ 
+ 
+    
+# DEFINIR AS HOTKEYS
+ 
+def pause_and_play_video():
+    # Injetar e executar JavaScript no contexto da página
+    js_play_video = '''
+{
+let video = document.querySelectorAll('video')[0];
+/*
+FIX TOP QUE ARRUMEI PARA NÃO RESETAR O playbackRate ao dar play no video
+*/
+if(video){
+	video.onplay = (e) => {
+		e.target.playbackRate = localStorage.getItem('videoSpeed');
+		console.log("playbackRate ajustado para: ", e.target.playbackRate)
+	}
+}
+// TOGGLE PAUSAR / PLAY
+if(video.paused){ // se tiver pausado, paused é um método js
+	video.play();
+	console.log("play no video")
+}else{
+	// video?.playbackRate = localStorage.getItem('videoSpeed');
+	video.pause();
+	// video?.defaultPlaybackRate = localStorage.getItem('videoSpeed');
+	console.log("pause no video");
+}
+}'''
+    driver.execute_script(js_play_video) # executar javascript no console / chrome
+def increase_video_speed():
+    # Injetar e executar JavaScript no contexto da página
+    js_increase_speed = '''
+// capturar o video
+{
+var video = document.getElementsByTagName('video')[0];
+
+// aumentar velocidade do video
+function speed(value = 0.25) {
+  video.playbackRate += value;
+}
+if(video.playbackRate <=4.0){ // para não dar erro, executar somente se a velocidade for menor ou igual a 4
+  speed(); // executar função
+  console.log("aumentei a velocidade: ", video.playbackRate);
+  localStorage.setItem('videoSpeed', video.playbackRate);
+}
+}
+'''
+    driver.execute_script(js_increase_speed) # executar javascript no console / chrome
+def decrease_video_speed():
+    # Injetar e executar JavaScript no contexto da página
+    js_decrease_speed = '''
+// capturar o video
+
+var video = document.getElementsByTagName('video')[0];
+
+// diminuir velocidade do video
+function speed(value = 0.25) {
+  video.playbackRate -= value;
+  video.defaultPlaybackRate -= value;
+}
+if(video.playbackRate >= 0.25){ // para não dar erro , só executar se a velocidade do video for maior ou igual a 0.25
+  speed(); // executar função
+  console.log("diminui a velocidade: ", video.playbackRate);
+  localStorage.setItem('videoSpeed', video.playbackRate);
+}
+'''
+    driver.execute_script(js_decrease_speed) # executar javascript no console / chrome
+def fast_forward_video():
+    # Injetar e executar JavaScript no contexto da página
+    js_fast_forward = '''
+// capturar o video
+{
+var video = document.getElementsByTagName('video')[0];
+
+// avançar video, parametro com valor padrao de 3 segundos, caso nao passe um argumento na funcao
+function skip(value = 3) {
+  video.currentTime += value;
+}
+skip(); // executar função
+}
+'''
+    driver.execute_script(js_fast_forward) # executar javascript no console / chrome
+def rewind_video():
+    # Injetar e executar JavaScript no contexto da página
+    js_rewind_video = '''
+// capturar o video
+{
+var video = document.getElementsByTagName('video')[0];
+
+// voltar 3 segundos de video
+function rewind(value = 3) {
+  video.currentTime -= value;
+}
+rewind(); // executar função
+}
+
+'''
+    driver.execute_script(js_rewind_video) # executar javascript no console / chrome
+def rewind_video():
+    # Injetar e executar JavaScript no contexto da página
+    js_rewind_video = '''
+// capturar o video
+{
+var video = document.getElementsByTagName('video')[0];
+
+// voltar 3 segundos de video
+function rewind(value = 3) {
+  video.currentTime -= value;
+}
+rewind(); // executar função
+}
+
+'''
+    driver.execute_script(js_rewind_video) # executar javascript no console / chrome
+def toggle_video_subtitles():
+    # Injetar e executar JavaScript no contexto da página
+    js_toggle_subtitles = '''
+{
+		// clicar no legenda
+	document.querySelectorAll('[aria-label="Legendas"], [aria-label="Subtitles"]')[0]?.parentElement?.parentElement?.click();
+	console.log("click legend icon")
+	var optionDesligado;
+    var optionIngles;
+			// selecionar desligado ou ingles
+	var selectionsAtive = document.querySelectorAll('[aria-checked="true"]');
+    var allOptions = document.querySelectorAll('ul[aria-label="Legendas"] li, ul[aria-label="Subtitles"] li, ul[aria-label="Captions"] li');
+    allOptions.forEach(val => {
+        if(val?.textContent?.includes('Ingl') || val?.textContent?.includes('English')){
+            optionIngles = val;
+        }else if(val.textContent.includes('Deslig') || val.textContent.includes('Off')){
+            optionDesligado = val;
+        }
+    })
+    if(optionDesligado?.firstChild?.getAttribute('aria-checked') == 'true'){
+        optionIngles?.firstChild?.firstChild?.click();
+    }else{
+        optionDesligado?.firstChild?.firstChild?.click();
+    }
 
 
 
+	// document.querySelectorAll('[aria-label="Legendas"]')[0].parentElement.parentElement.click();
+	// console.log("click legend icon")
+	
+	// 		// selecionar desligado ou ingles
+	// let selectionsAtive = document.querySelectorAll('[aria-checked="true"]');
+	// selectionsAtive.forEach(val => {
+	// 	if(val.textContent.includes("Desligado")){
+	// 		// selecionar ingles
+	// 		document.querySelectorAll('[aria-checked="true"')[1].closest('li').nextElementSibling.nextElementSibling.firstChild.click();
+	// 		console.log("legenda: ingles selecionado")
+	// 	}else if(val.textContent.includes("Ingl")){
+	// 		// selecionar desligado
+	// 			document.querySelectorAll('[aria-checked="true"')[1].closest('li').previousSibling.previousSibling.firstChild.firstChild.click();
+	// 			console.log("legenda: desabilitado selecionado")
+	// 	}
+	// })
+}
+'''
+    driver.execute_script(js_toggle_subtitles) # executar javascript no console / chrome
+def skip_video():
+    # Injetar e executar JavaScript no contexto da página
+    js_skip_video = '''
+{
+// capturar o video
+{
+var video = document.getElementsByTagName('video')[0];
+
+var goNext = document.querySelectorAll('#go-to-next-item')[0];
+
+// avançar pro próximo vídeo
+goNext.click();
+
+}
+'''
+    driver.execute_script(js_skip_video) # executar javascript no console / chrome
+def previous_video():
+    # Injetar e executar JavaScript no contexto da página
+    js_previous_video = '''
+// capturar o video
+{
+var video = document.getElementsByTagName('video')[0];
+
+var goPrevious = document.querySelectorAll('#go-to-previous-item')[0];
+
+// voltar pro video anterior
+goPrevious.click();
+
+}
+'''
+    driver.execute_script(js_previous_video) # executar javascript no console / chrome
+
+
+
+
+
+
+
+
+
+
+# Associar as hotkeys
+keyboard.add_hotkey('alt+l', pause_and_play_video)
+# keyboard.add_hotkey('alt+=', increase_video_speed)
+# keyboard.add_hotkey('alt+-', decrease_video_speed)
+# keyboard.add_hotkey('alt+left', rewind_video)
+# keyboard.add_hotkey('alt+right', fast_forward_video)
+# keyboard.add_hotkey('alt+end', skip_video)
+# keyboard.add_hotkey('alt+home', previous_video)
+# keyboard.add_hotkey('alt+k', toggle_video_subtitles)
+
+
+
+
+
+
+
+
+
+
+
+keyboard.wait('esc') # necessário para ficar executando as hotstrings enquanto o script tiver rodando
