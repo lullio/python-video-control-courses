@@ -65,7 +65,7 @@ def get_data_from_google_sheet(url_data):
         col4_filter_dropdown.pack()
         
         # Função para filtrar os dados da Treeview com base no valor selecionado no dropdown
-        def filter_data(event=None):
+        def filter_data_with_combobox(event=None):
             selected_value = col4_filter_var.get()
             
             if selected_value == "Todos":
@@ -80,13 +80,8 @@ def get_data_from_google_sheet(url_data):
                 for row in filtered_rows:
                     tree.insert("", "end", values=row)
         
-        col4_filter_dropdown.bind("<<ComboboxSelected>>", filter_data)  # Liga o evento de seleção do combobox
+        col4_filter_dropdown.bind("<<ComboboxSelected>>", filter_data_with_combobox)  # Liga o evento de seleção do combobox
         
-        # Campo de pesquisa com regex
-        search_var = tk.StringVar()
-        search_entry = tk.Entry(root, textvariable=search_var, width=30)
-        search_entry.pack(pady=10)
-            
          # Função para lidar com o clique duplo na ListView
         def on_item_click(event):
             item = tree.selection()[0]
@@ -127,7 +122,7 @@ def get_data_from_google_sheet(url_data):
     
 
 # URL da planilha do Google Sheets
-url_data = "https://docs.google.com/spreadsheets/d/1_flbbi427JI7NiIk4ZGZvAM9eRBM4dd_gTDFgw3Npo8/gviz/tq?tqx=out:csv&range=A2:G80&sheet=Cursos"
+url_data = "https://docs.google.com/spreadsheets/d/1Fg4cP6VEjQ5Ke8LCTSo88dUdZlc1az2RpBC6Bu6YuSw/gviz/tq?tqx=out:csv&range=A2:G80&sheet=Cursos"
 
 # Chamada da função para obter os dados
 planilha_data = get_data_from_google_sheet(url_data)
