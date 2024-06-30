@@ -1,10 +1,41 @@
+import webbrowser # para abrir o browser, bem mais simples q selenium
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager # pip install webdriver-manager
+
 import requests
 import csv
 
 import tkinter as tk
 from tkinter import ttk
-import webbrowser
+
+import keyboard
 import re
+
+# Configuração do serviço do WebDriver
+service = Service(ChromeDriverManager().install())
+# Configuração do navegador Chrome
+options = webdriver.ChromeOptions()
+options.add_argument("--start-maximized")  # Abrir navegador maximizado
+options.add_argument("--user-data-dir=C:/Users/Felipe/AppData/Local/Google/Chrome/User Data")  # Diretório do perfil padrão
+options.add_argument("--profile-directory=Default")  # Diretório do perfil padrão
+#options.add_argument("--remote-allow-origins=*")  # Permitir todas as origens remotas
+#options.add_argument("--window-size=1920,1080")
+#options.add_argument("--headless") # executar chrome sem interface gráfica
+#options.add_argument("--disable-extensions")
+#options.add_argument("--disable-notifications")
+#options.add_argument("--disable-gpu")
+#options.add_argument("--ignore-certificate-errors")
+#options.add_argument("--disable-popup-blocking")  # Desabilita o bloqueio de pop-ups
+#options.add_argument("--disable-infobars")  # Desabilita as infobars
+#options.add_argument("--no-first-run")  # Não executa a primeira execução
+#options.add_argument("--no-sandbox")  # Nenhum ambiente de laboratório
+#options.add argument ("--remote-debugging-port=0")
+
+# Inicialização do driver do Chrome
+driver = webdriver.Chrome(service=service, options=options)
+# Encerrar o navegador
+#driver.quit()
 
 def get_data_from_google_sheet(url_data):
     # Realiza uma requisição GET para obter o conteúdo da planilha
@@ -82,18 +113,6 @@ def get_data_from_google_sheet(url_data):
         
         col4_filter_dropdown.bind("<<ComboboxSelected>>", filter_data_with_combobox)  # Liga o evento de seleção do combobox
         
-         # Função para lidar com o clique duplo na ListView
-        def on_item_click(event):
-            item = tree.selection()[0]
-            if item:
-                # Obtém os valores da linha clicada
-                values = tree.item(item, "values")
-                # Abre o navegador com o link da coluna 3 (índice 2)
-                webbrowser.open(values[2]) # Coluna 3 = url do curso
-                webbrowser.open(values[5]) # Coluna 6 = url do notion
-        
-        tree.bind("<Double-1>", on_item_click)  # Define o evento de duplo clique na ListView
-        
         # Campo de pesquisa com regex
         search_var = tk.StringVar()
         search_entry = tk.Entry(root, textvariable=search_var, width=30)
@@ -113,19 +132,54 @@ def get_data_from_google_sheet(url_data):
         
         search_var.trace_add("write", lambda *args: filter_data_with_search())  # Adiciona rastreador para atualizar ao digitar
         
+        
+        # Função para lidar com o clique duplo na ListView
+        def on_item_click(event):
+            item = tree.selection()[0]
+            if item:
+                # Obtém os valores da linha clicada
+                values = tree.item(item, "values")
+                # Abre o navegador com o link da coluna 3 (índice 2)
+                driver.get(values[2]) # Coluna 3 = url do curso usando selenium pois quero abrir no meu perfil Felipe do Chrome
+                webbrowser.open(values[5]) # Coluna 6 = url do notion
+        
+        tree.bind("<Double-1>", on_item_click)  # Define o evento de duplo clique na ListView
+        
         # Iniciar o loop principal da GUI
         root.mainloop()
         return csv_data
     else:
         print(f"Erro ao obter dados da planilha. Código de status: {response.status_code}")
         return None
-    
+ 
+def minha_funcao():
+    # Injetar e executar JavaScript no contexto da página
+    print("hello")
+    script = '''
+    // Exemplo de código JavaScript
+    alert("Olá! Esta é uma mensagem de alerta injetada via Python e Selenium.");
+
+    function sayHello(name) {
+        console.log("Hello, " + name + "!");
+    }
+
+    // Chamando a função
+    sayHello("Alice");
+    '''
+    driver.execute_script(script)
+# Função para associar a hotkey
+def associar_hotkey():
+    keyboard.add_hotkey('ctrl+i', minha_funcao) 
+ 
 
 # URL da planilha do Google Sheets
 url_data = "https://docs.google.com/spreadsheets/d/1Fg4cP6VEjQ5Ke8LCTSo88dUdZlc1az2RpBC6Bu6YuSw/gviz/tq?tqx=out:csv&range=A2:G80&sheet=Cursos"
 
+# Associar a hotkey quando o script é executado
+associar_hotkey()
 # Chamada da função para obter os dados
 planilha_data = get_data_from_google_sheet(url_data)
+
 
 # Exibição dos dados (opcional)
 print(planilha_data)
