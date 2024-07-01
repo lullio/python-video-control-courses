@@ -167,23 +167,7 @@ def get_data_from_google_sheet(url_data):
         return csv_data
     else:
         print(f"Erro ao obter dados da planilha. Código de status: {response.status_code}")
-        return None
- 
- 
- 
-# URL da planilha do Google Sheets
-url_data = "https://docs.google.com/spreadsheets/d/1Fg4cP6VEjQ5Ke8LCTSo88dUdZlc1az2RpBC6Bu6YuSw/gviz/tq?tqx=out:csv&range=A2:G80&sheet=Cursos"
-
-# Associar a hotkey quando o script é executado
-# Chamada da função para obter os dados
-planilha_data = get_data_from_google_sheet(url_data)
-# Exibição dos dados (opcional)
-print(planilha_data) 
- 
- 
- 
- 
- 
+        return None 
     
 # DEFINIR AS HOTKEYS
  
@@ -191,7 +175,7 @@ def pause_and_play_video():
     # Injetar e executar JavaScript no contexto da página
     js_play_video = '''
 {
-let video = document.querySelectorAll('video')[0];
+var video = document.querySelectorAll('video')[0];
 /*
 FIX TOP QUE ARRUMEI PARA NÃO RESETAR O playbackRate ao dar play no video
 */
@@ -211,7 +195,8 @@ if(video.paused){ // se tiver pausado, paused é um método js
 	// video?.defaultPlaybackRate = localStorage.getItem('videoSpeed');
 	console.log("pause no video");
 }
-}'''
+}
+'''
     driver.execute_script(js_play_video) # executar javascript no console / chrome
 def increase_video_speed():
     # Injetar e executar JavaScript no contexto da página
@@ -363,6 +348,7 @@ goNext.click();
 def previous_video():
     # Injetar e executar JavaScript no contexto da página
     js_previous_video = '''
+    alert('HI')
 // capturar o video
 {
 var video = document.getElementsByTagName('video')[0];
@@ -377,32 +363,25 @@ goPrevious.click();
     driver.execute_script(js_previous_video) # executar javascript no console / chrome
 
 
-
-
-
-
-
-
-
-
 # Associar as hotkeys
 keyboard.add_hotkey('alt+l', pause_and_play_video)
-# keyboard.add_hotkey('alt+=', increase_video_speed)
-# keyboard.add_hotkey('alt+-', decrease_video_speed)
-# keyboard.add_hotkey('alt+left', rewind_video)
-# keyboard.add_hotkey('alt+right', fast_forward_video)
-# keyboard.add_hotkey('alt+end', skip_video)
-# keyboard.add_hotkey('alt+home', previous_video)
-# keyboard.add_hotkey('alt+k', toggle_video_subtitles)
+keyboard.add_hotkey('win+l', pause_and_play_video)
+keyboard.add_hotkey('alt+=', increase_video_speed)
+keyboard.add_hotkey('alt+-', decrease_video_speed)
+keyboard.add_hotkey('alt+left', rewind_video)
+keyboard.add_hotkey('alt+right', fast_forward_video)
+keyboard.add_hotkey('alt+end', skip_video)
+keyboard.add_hotkey('alt+home', previous_video)
+keyboard.add_hotkey('alt+k', toggle_video_subtitles)
 
+# URL da planilha do Google Sheets
+url_data = "https://docs.google.com/spreadsheets/d/1Fg4cP6VEjQ5Ke8LCTSo88dUdZlc1az2RpBC6Bu6YuSw/gviz/tq?tqx=out:csv&range=A2:G80&sheet=Cursos"
 
-
-
-
-
-
-
-
+# Associar a hotkey quando o script é executado
+# Chamada da função para obter os dados
+planilha_data = get_data_from_google_sheet(url_data)
+# Exibição dos dados (opcional)
+print(planilha_data) 
 
 
 keyboard.wait('esc') # necessário para ficar executando as hotstrings enquanto o script tiver rodando
