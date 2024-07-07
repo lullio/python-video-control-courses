@@ -8,6 +8,8 @@ import csv
 
 import tkinter as tk
 from tkinter import ttk
+from tkinter import messagebox
+from tkinter import filedialog
 
 import keyboard
 import re
@@ -49,6 +51,14 @@ def setup_driver():
     #driver.quit()
     return driver
 
+def spreadsheet():
+    webbrowser.open("https://docs.google.com/spreadsheets/d/1Fg4cP6VEjQ5Ke8LCTSo88dUdZlc1az2RpBC6Bu6YuSw/edit?usp=sharing")
+def udemy():
+    webbrowser.open("https://www.udemy.com/home/my-courses/learning/")
+def about():
+    webbrowser.open("https://projetos.lullio.com.br/gerenciador-de-cursos-e-controle-de-video")
+    webbrowser.open("https://github.com/lullio/python-video-control-courses")
+
 def get_data_from_google_sheet(url_data, driver):
     try:
         # Realiza uma requisição GET para obter o conteúdo da planilha
@@ -69,6 +79,24 @@ def get_data_from_google_sheet(url_data, driver):
     # Criação da janela principal
     root = tk.Tk()
     root.title("Gerenciador de Cursos - Felipe")
+    
+    # Criação da barra de menu
+    menu_bar = tk.Menu(root)
+
+    # Menu Arquivo
+    file_menu = tk.Menu(menu_bar, tearoff=0)
+    file_menu.add_command(label="Planilha", command=spreadsheet)
+    file_menu.add_command(label="Udemy", command=udemy)
+    # file_menu.add_separator()
+    menu_bar.add_cascade(label="Abrir", menu=file_menu)
+
+    # Menu Ajuda
+    help_menu = tk.Menu(menu_bar, tearoff=0)
+    help_menu.add_command(label="Sobre", command=about)
+    menu_bar.add_cascade(label="Ajuda", menu=help_menu)
+    
+    # Adicionar a barra de menu à janela principal
+    root.config(menu=menu_bar)
 
      # Criando uma ListView com scroll vertical
     tree = ttk.Treeview(root, columns=("col1", "col2", "col3", "col4", "col5", "col6", "col7"), show="headings")
