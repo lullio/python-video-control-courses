@@ -129,29 +129,67 @@ def pause_and_play_video(driver):
             e.target.playbackRate = localStorage.getItem('videoSpeed');
         }
     }
-    if(video.paused){
-        video.play();
+    if(document.querySelectorAll('video')[0].paused){
+        document.querySelectorAll('video')[0].play();
     } else {
-        video.pause();
+        document.querySelectorAll('video')[0].pause();
     }
     '''
     driver.execute_script(js_play_video)
 
-def change_video_speed(driver, increase=True):
-    js_change_speed = '''
-    var video = document.getElementsByTagName('video')[0];
-    function speed(value) {
-        video.playbackRate += value;
-    }
-    if({}) {{
-        speed(0.25);
-    }} else {{
-        speed(-0.25);
-    }}
-    localStorage.setItem('videoSpeed', video.playbackRate);
-    '''.format("true" if increase else "false")
-    driver.execute_script(js_change_speed)
+# def change_video_speed(driver, increase=True):
+#     js_change_speed = f'''
+#     var video = document.getElementsByTagName('video')[0];
+#     function speed(value) {{
+#         video.playbackRate += value;
+#     }}
+#     if({increase}) {{
+#         speed(0.25);
+#     }} else {{
+#         speed(-0.25);
+#     }}
+#     localStorage.setItem('videoSpeed', video.playbackRate);
+#     '''
+#     driver.execute_script(js_change_speed)
 
+def increase_video_speed(driver):
+    js_increase_speed = '''
+// capturar o video
+{
+var video = document.getElementsByTagName('video')[0];
+
+// aumentar velocidade do video
+function speed(value = 0.15) {
+  video.playbackRate += value;
+}
+if(video.playbackRate <=4.0){ // para não dar erro, executar somente se a velocidade for menor ou igual a 4
+  speed(); // executar função
+  console.log("aumentei a velocidade: ", video.playbackRate);
+  localStorage.setItem('videoSpeed', video.playbackRate);
+}
+}
+'''
+    driver.execute_script(js_increase_speed)
+    
+def decrease_video_speed(driver):
+    js_decrease_speed = '''
+// capturar o video
+
+var video = document.getElementsByTagName('video')[0];
+
+// diminuir velocidade do video
+function speed(value = 0.15) {
+  video.playbackRate -= value;
+  video.defaultPlaybackRate -= value;
+}
+if(video.playbackRate >= 0.15){ // para não dar erro , só executar se a velocidade do video for maior ou igual a 0.25
+  speed(); // executar função
+  console.log("diminui a velocidade: ", video.playbackRate);
+  localStorage.setItem('videoSpeed', video.playbackRate);
+}
+'''
+    driver.execute_script(js_decrease_speed)
+    
 def fast_forward_video(driver):
     js_fast_forward = '''
     var video = document.getElementsByTagName('video')[0];
@@ -161,6 +199,11 @@ def fast_forward_video(driver):
     skip(3);
     '''
     driver.execute_script(js_fast_forward)
+def teste(driver):
+    js_test = '''
+alert('teste')
+    '''
+    driver.execute_script(js_test)
 
 def rewind_video(driver):
     js_rewind_video = '''
@@ -174,28 +217,60 @@ def rewind_video(driver):
 
 def toggle_video_subtitles(driver):
     js_toggle_subtitles = '''
-    var subtitlesButton = document.querySelector('[aria-label="Legendas"], [aria-label="Subtitles"]');
-    subtitlesButton.click();
-    var options = document.querySelectorAll('ul[aria-label="Legendas"] li, ul[aria-label="Subtitles"] li');
-    options.forEach(option => {
-        if(option.textContent.includes('Ingl') || option.textContent.includes('English')) {
-            option.click();
-        } else if(option.textContent.includes('Deslig') || option.textContent.includes('Off')) {
-            option.click();
+{
+		// clicar no legenda
+	document.querySelectorAll('[aria-label="Legendas"], [aria-label="Subtitles"]')[0]?.parentElement?.parentElement?.click();
+	console.log("click legend icon")
+	var optionDesligado;
+    var optionIngles;
+			// selecionar desligado ou ingles
+	var selectionsAtive = document.querySelectorAll('[aria-checked="true"]');
+    var allOptions = document.querySelectorAll('ul[aria-label="Legendas"] li, ul[aria-label="Subtitles"] li, ul[aria-label="Captions"] li');
+    allOptions.forEach(val => {
+        if(val?.textContent?.includes('Ingl') || val?.textContent?.includes('English')){
+            optionIngles = val;
+        }else if(val.textContent.includes('Deslig') || val.textContent.includes('Off')){
+            optionDesligado = val;
         }
-    });
+    })
+    if(optionDesligado?.firstChild?.getAttribute('aria-checked') == 'true'){
+        optionIngles?.firstChild?.firstChild?.click();
+    }else{
+        optionDesligado?.firstChild?.firstChild?.click();
+    }
+
+
+
+	// document.querySelectorAll('[aria-label="Legendas"]')[0].parentElement.parentElement.click();
+	// console.log("click legend icon")
+	
+	// 		// selecionar desligado ou ingles
+	// let selectionsAtive = document.querySelectorAll('[aria-checked="true"]');
+	// selectionsAtive.forEach(val => {
+	// 	if(val.textContent.includes("Desligado")){
+	// 		// selecionar ingles
+	// 		document.querySelectorAll('[aria-checked="true"')[1].closest('li').nextElementSibling.nextElementSibling.firstChild.click();
+	// 		console.log("legenda: ingles selecionado")
+	// 	}else if(val.textContent.includes("Ingl")){
+	// 		// selecionar desligado
+	// 			document.querySelectorAll('[aria-checked="true"')[1].closest('li').previousSibling.previousSibling.firstChild.firstChild.click();
+	// 			console.log("legenda: desabilitado selecionado")
+	// 	}
+	// })
+}
     '''
     driver.execute_script(js_toggle_subtitles)
 
 def start_keyboard_shortcuts(driver):
-    keyboard.add_hotkey('alt+l', lambda: pause_and_play_video(driver))
-    keyboard.add_hotkey('alt+=', lambda: change_video_speed(driver, increase=True))
-    keyboard.add_hotkey('alt+-', lambda: change_video_speed(driver, increase=False))
-    keyboard.add_hotkey('alt+left', lambda: rewind_video(driver))
-    keyboard.add_hotkey('alt+right', lambda: fast_forward_video(driver))
-    keyboard.add_hotkey('alt+end', lambda: driver.execute_script("document.querySelector('#go-to-next-item').click();"))
-    keyboard.add_hotkey('alt+home', lambda: driver.execute_script("document.querySelector('#go-to-previous-item').click();"))
-    keyboard.add_hotkey('alt+k', lambda: toggle_video_subtitles(driver))
+    keyboard.add_hotkey('shift+l', lambda: pause_and_play_video(driver))
+    keyboard.add_hotkey('shift+x', lambda: teste(driver))
+    keyboard.add_hotkey('shift+=', lambda: increase_video_speed(driver))
+    keyboard.add_hotkey('shift+-', lambda: decrease_video_speed(driver))
+    keyboard.add_hotkey('shift+left', lambda: rewind_video(driver))
+    keyboard.add_hotkey('shift+right', lambda: fast_forward_video(driver))
+    keyboard.add_hotkey('shift+end', lambda: driver.execute_script("document.querySelector('#go-to-next-item').click();"))
+    keyboard.add_hotkey('shift+home', lambda: driver.execute_script("document.querySelector('#go-to-previous-item').click();"))
+    keyboard.add_hotkey('shift+k', lambda: toggle_video_subtitles(driver))
 
     keyboard.wait('esc')
 
@@ -207,7 +282,7 @@ def main():
     gui_thread = threading.Thread(target=get_data_from_google_sheet, args=(url_data, driver))
     gui_thread.start()
 
-    # Inicie as hotkeys do teclado
+    # Inicie as hotkeys do tecladoX
     start_keyboard_shortcuts(driver)
 
 if __name__ == "__main__":
