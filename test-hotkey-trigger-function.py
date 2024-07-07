@@ -1,7 +1,6 @@
 import keyboard
 
-def minha_funcao():
-    print("Hotkey pressionada: CTRL+I")
+0
 
 # Função para associar a hotkey
 def associar_hotkey():

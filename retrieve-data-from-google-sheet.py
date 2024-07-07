@@ -179,19 +179,19 @@ var video = document.querySelectorAll('video')[0];
 /*
 FIX TOP QUE ARRUMEI PARA NÃO RESETAR O playbackRate ao dar play no video
 */
-if(video){
-	video.onplay = (e) => {
+if(document.querySelectorAll('video')[0]){
+	document.querySelectorAll('video')[0].onplay = (e) => {
 		e.target.playbackRate = localStorage.getItem('videoSpeed');
 		console.log("playbackRate ajustado para: ", e.target.playbackRate)
 	}
 }
-// TOGGLE PAUSAR / PLAY
-if(video.paused){ // se tiver pausado, paused é um método js
-	video.play();
+// TOGGLE PAUSAR / PlLAY
+if(document.querySelectorAll('video')[0].paused){ // se tiver pausado, paused é um método js
+	document.querySelectorAll('video')[0].play();
 	console.log("play no video")
 }else{
 	// video?.playbackRate = localStorage.getItem('videoSpeed');
-	video.pause();
+	document.querySelectorAll('video')[0].pause();
 	// video?.defaultPlaybackRate = localStorage.getItem('videoSpeed');
 	console.log("pause no video");
 }
@@ -363,16 +363,7 @@ goPrevious.click();
     driver.execute_script(js_previous_video) # executar javascript no console / chrome
 
 
-# Associar as hotkeys
-keyboard.add_hotkey('alt+l', pause_and_play_video)
-keyboard.add_hotkey('win+l', pause_and_play_video)
-keyboard.add_hotkey('alt+=', increase_video_speed)
-keyboard.add_hotkey('alt+-', decrease_video_speed)
-keyboard.add_hotkey('alt+left', rewind_video)
-keyboard.add_hotkey('alt+right', fast_forward_video)
-keyboard.add_hotkey('alt+end', skip_video)
-keyboard.add_hotkey('alt+home', previous_video)
-keyboard.add_hotkey('alt+k', toggle_video_subtitles)
+
 
 # URL da planilha do Google Sheets
 url_data = "https://docs.google.com/spreadsheets/d/1Fg4cP6VEjQ5Ke8LCTSo88dUdZlc1az2RpBC6Bu6YuSw/gviz/tq?tqx=out:csv&range=A2:G80&sheet=Cursos"
@@ -384,4 +375,20 @@ planilha_data = get_data_from_google_sheet(url_data)
 print(planilha_data) 
 
 
-keyboard.wait('esc') # necessário para ficar executando as hotstrings enquanto o script tiver rodando
+# Associar as hotkeys
+def associar_hotkeys():
+    keyboard.add_hotkey('alt+l', pause_and_play_video)
+    keyboard.add_hotkey('win+l', pause_and_play_video)
+    keyboard.add_hotkey('alt+=', increase_video_speed)
+    keyboard.add_hotkey('alt+-', decrease_video_speed)
+    keyboard.add_hotkey('alt+left', rewind_video)
+    keyboard.add_hotkey('alt+right', fast_forward_video)
+    keyboard.add_hotkey('alt+end', skip_video)
+    keyboard.add_hotkey('alt+home', previous_video)
+    keyboard.add_hotkey('alt+k', toggle_video_subtitles)
+
+# Associar a hotkey quando o script é executado
+associar_hotkeys()
+
+# Mantém o script em execução para capturar a hotkey
+keyboard.wait('esc')  # Aguarda pressionar ESC para sair
