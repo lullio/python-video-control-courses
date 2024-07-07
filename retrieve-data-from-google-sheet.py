@@ -210,8 +210,12 @@ def pause_and_play_video(driver):
         }
         if(videoElem.paused){
             playVideo();
+            // método alternativo, clicar no botão play
+            document.querySelectorAll('[data-purpose="play-button"]')[0].click();
         } else {
             videoElem.pause();
+            // método alternativo, clicar no botão pause
+            document.querySelectorAll('[data-purpose="pause-button"]')[0].click();
         }   
         if(videoElem){
             videoElem.onplay = (e) => {
