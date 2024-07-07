@@ -199,17 +199,25 @@ def get_data_from_google_sheet(url_data, driver):
 
 def pause_and_play_video(driver):
     js_play_video = '''
-    var video = document.querySelectorAll('video')[0];
-    if(document.querySelectorAll('video')[0]){
-        document.querySelectorAll('video')[0].onplay = (e) => {
-            e.target.playbackRate = localStorage.getItem('videoSpeed');
+        var videoElem = document.querySelectorAll('video')[0];
+        async function playVideo() {
+            try {
+                await videoElem.play();
+                videoElem.classList.add("playing");
+            } catch (err) {
+                videoElem.classList.remove("playing");
+            }
         }
-    }
-    if(document.querySelectorAll('video')[0].paused){
-        document.querySelectorAll('video')[0].play();
-    } else {
-        document.querySelectorAll('video')[0].pause();
-    }
+        if(videoElem.paused){
+            playVideo();
+        } else {
+            videoElem.pause();
+        }   
+        if(videoElem){
+            videoElem.onplay = (e) => {
+                e.target.playbackRate = localStorage.getItem('videoSpeed');
+            }
+        }
     '''
     driver.execute_script(js_play_video)
 
