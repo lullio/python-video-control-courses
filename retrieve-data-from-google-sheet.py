@@ -32,8 +32,19 @@ options.add_argument("--profile-directory=Default")  # Diretório do perfil padr
 #options.add_argument("--no-sandbox")  # Nenhum ambiente de laboratório
 #options.add argument ("--remote-debugging-port=0")
 
+# Adding argument to disable the AutomationControlled flag 
+options.add_argument("--disable-blink-features=AutomationControlled") 
+# Exclude the collection of enable-automation switches 
+options.add_experimental_option("excludeSwitches", ["enable-automation"]) 
+# Turn-off userAutomationExtension 
+options.add_experimental_option("useAutomationExtension", False) 
+
 # Inicialização do driver do Chrome
 driver = webdriver.Chrome(service=service, options=options)
+
+# Changing the property of the navigator value for webdriver to undefined 
+driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})") 
+
 # Encerrar o navegador
 #driver.quit()
 
@@ -51,7 +62,7 @@ def get_data_from_google_sheet(url_data):
         
         # Criando a janela principal da aplicação
         root = tk.Tk()
-        root.title("Dados da Planilha")
+        root.title("Gerenciador de Cursos - Felipe")
         
         # Criando uma ListView com scroll vertical
         tree = ttk.Treeview(root, columns=("col1", "col2", "col3", "col4", "col5", "col6", "col7"), show="headings")
