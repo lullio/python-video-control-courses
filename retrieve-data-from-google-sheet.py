@@ -11,6 +11,7 @@ from tkinter import ttk
 
 import keyboard
 import re
+import time
 
 # Configuração do serviço do WebDriver
 service = Service(ChromeDriverManager().install())
@@ -42,8 +43,22 @@ options.add_experimental_option("useAutomationExtension", False)
 # Inicialização do driver do Chrome
 driver = webdriver.Chrome(service=service, options=options)
 
+# Initializing a list with two Useragents 
+# useragentarray = [ 
+# 	"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36", 
+# 	"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36", 
+# ] 
+
+# for i in range(len(useragentarray)): 
+# 	# Setting user agent iteratively as Chrome 108 and 107 
+# 	driver.execute_cdp_cmd("Network.setUserAgentOverride", {"userAgent": useragentarray[i]}) 
+# 	print(driver.execute_script("return navigator.userAgent;")) 
+# 	driver.get("https://www.httpbin.org/headers") 
+ 
 # Changing the property of the navigator value for webdriver to undefined 
 driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})") 
+
+
 
 # Encerrar o navegador
 #driver.quit()
@@ -175,13 +190,13 @@ def get_data_from_google_sheet(url_data):
         
         # Iniciar o loop principal da GUI
         root.mainloop()
-        return csv_data
+        #return csv_data
     else:
         print(f"Erro ao obter dados da planilha. Código de status: {response.status_code}")
-        return None 
-    
-# DEFINIR AS HOTKEYS
- 
+        #return None 
+
+
+# FUNÇÕES CHROME
 def pause_and_play_video():
     # Injetar e executar JavaScript no contexto da página
     js_play_video = '''
@@ -262,22 +277,6 @@ skip(); // executar função
 }
 '''
     driver.execute_script(js_fast_forward) # executar javascript no console / chrome
-def rewind_video():
-    # Injetar e executar JavaScript no contexto da página
-    js_rewind_video = '''
-// capturar o video
-{
-var video = document.getElementsByTagName('video')[0];
-
-// voltar 3 segundos de video
-function rewind(value = 3) {
-  video.currentTime -= value;
-}
-rewind(); // executar função
-}
-
-'''
-    driver.execute_script(js_rewind_video) # executar javascript no console / chrome
 def rewind_video():
     # Injetar e executar JavaScript no contexto da página
     js_rewind_video = '''
@@ -375,31 +374,30 @@ goPrevious.click();
 
 
 
+    
+# Associar a hotkey quando o script é executado
+keyboard.add_hotkey('alt+l', pause_and_play_video)
+#keyboard.add_hotkey('win+l', pause_and_play_video)
+keyboard.add_hotkey('alt+=', increase_video_speed)
+keyboard.add_hotkey('alt+-', decrease_video_speed)
+keyboard.add_hotkey('alt+left', rewind_video)
+keyboard.add_hotkey('alt+right', fast_forward_video)
+keyboard.add_hotkey('alt+end', skip_video)
+keyboard.add_hotkey('alt+home', previous_video)
+keyboard.add_hotkey('alt+k', toggle_video_subtitles)
+
+# Mantém o script em execução para capturar a hotkey
+keyboard.wait('esc')  # Aguarda pressionar ESC para sair  
+
+# esperar 2 segundos
+time.sleep(2)
 
 # URL da planilha do Google Sheets
 url_data = "https://docs.google.com/spreadsheets/d/1Fg4cP6VEjQ5Ke8LCTSo88dUdZlc1az2RpBC6Bu6YuSw/gviz/tq?tqx=out:csv&range=A2:G80&sheet=Cursos"
 
-# Associar a hotkey quando o script é executado
 # Chamada da função para obter os dados
 planilha_data = get_data_from_google_sheet(url_data)
-# Exibição dos dados (opcional)
-print(planilha_data) 
 
 
-# Associar as hotkeys
-def associar_hotkeys():
-    keyboard.add_hotkey('alt+l', pause_and_play_video)
-    keyboard.add_hotkey('win+l', pause_and_play_video)
-    keyboard.add_hotkey('alt+=', increase_video_speed)
-    keyboard.add_hotkey('alt+-', decrease_video_speed)
-    keyboard.add_hotkey('alt+left', rewind_video)
-    keyboard.add_hotkey('alt+right', fast_forward_video)
-    keyboard.add_hotkey('alt+end', skip_video)
-    keyboard.add_hotkey('alt+home', previous_video)
-    keyboard.add_hotkey('alt+k', toggle_video_subtitles)
 
-# Associar a hotkey quando o script é executado
-associar_hotkeys()
-
-# Mantém o script em execução para capturar a hotkey
-keyboard.wait('esc')  # Aguarda pressionar ESC para sair
+   
