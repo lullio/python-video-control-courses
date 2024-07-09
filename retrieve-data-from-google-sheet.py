@@ -79,6 +79,7 @@ def get_data_from_google_sheet(url_data, driver):
     # Criação da janela principal
     root = tk.Tk()
     root.title("Gerenciador de Cursos - Felipe")
+    root.attributes('-topmost', True)
     
     # Criação da barra de menu
     menu_bar = tk.Menu(root)
@@ -86,12 +87,25 @@ def get_data_from_google_sheet(url_data, driver):
     # Menu Arquivo
     file_menu = tk.Menu(menu_bar, tearoff=0)
     file_menu.add_command(label="Planilha", command=spreadsheet)
-    file_menu.add_command(label="Udemy", command=udemy)
     # file_menu.add_separator()
+    file_menu.add_command(label="Udemy", command=udemy)
     menu_bar.add_cascade(label="Abrir", menu=file_menu)
 
     # Menu Ajuda
     help_menu = tk.Menu(menu_bar, tearoff=0)
+    help_menu.add_command(label="Sobre", command=about)
+    help_menu.add_separator()
+    help_menu.add_command(label="Shift+L = Pause/Play", command=about)
+    help_menu.add_command(label="Shift+= = Aumentar velocidade", command=about)
+    help_menu.add_command(label="Shift+- = Diminuir velocidade", command=about)
+    help_menu.add_separator()
+    help_menu.add_command(label="Shift+< = Retroceder", command=about)
+    help_menu.add_command(label="Shift+> = Avançar", command=about)
+    help_menu.add_command(label="Shift+k = Legenda", command=about)
+    help_menu.add_command(label="Shift+Home = Vídeo Anterior", command=about)
+    help_menu.add_command(label="Shift+End = Próximo Vídeo", command=about)
+    help_menu.add_separator()
+    help_menu.add_command(label="Shift+ x = Test alert()", command=about)
     help_menu.add_command(label="Sobre", command=about)
     menu_bar.add_cascade(label="Ajuda", menu=help_menu)
     
@@ -153,8 +167,8 @@ def get_data_from_google_sheet(url_data, driver):
 
     # Função para filtrar os dados da Treeview com base no valor selecionado no dropdown
     def filter_data_with_combobox(event=None):
-        selected_value = col4_filter_var.get()
-        tree.delete(*tree.get_children())
+        selected_value = col4_filter_var.get() # recupera o texto/valor do combobox
+        tree.delete(*tree.get_children()) # Limpa a Treeview antes de aplicar o filtro
         # Mostra todas as linhas se "Todos" estiver selecionado
         if selected_value == "Todos":
             for row in all_rows:
@@ -200,22 +214,32 @@ def get_data_from_google_sheet(url_data, driver):
 def pause_and_play_video(driver):
     js_play_video = '''
         var videoElem = document.querySelectorAll('video')[0];
+        //videoElem.muted = true;
+        
         async function playVideo() {
             try {
+                //Simular a interação do usuário para permitir reprodução automática
+                var clickEvent  = document.createEvent ('MouseEvents');
+                clickEvent.initEvent ('click', true, true);
+                videoElem.dispatchEvent (clickEvent);
+                document.body.dispatchEvent (clickEvent)
+                
                 await videoElem.play();
-                videoElem.classList.add("playing");
+                //videoElem.muted = false;
             } catch (err) {
-                videoElem.classList.remove("playing");
+                console.log(err)
             }
         }
         if(videoElem.paused){
-            playVideo();
             // método alternativo, clicar no botão play
-            document.querySelectorAll('[data-purpose="play-button"]')[0].click();
+             var clickEvent  = document.createEvent ('MouseEvents');
+            clickEvent.initEvent ('click', true, true);
+            document.querySelectorAll('[data-purpose="play-button"]')[0]?.dispatchEvent (clickEvent);
+            playVideo();
         } else {
             videoElem.pause();
             // método alternativo, clicar no botão pause
-            document.querySelectorAll('[data-purpose="pause-button"]')[0].click();
+            document.querySelectorAll('[data-purpose="pause-button"]')[0]?.click();
         }   
         if(videoElem){
             videoElem.onplay = (e) => {
@@ -302,6 +326,29 @@ def rewind_video(driver):
     rewind(3);
     '''
     driver.execute_script(js_rewind_video)
+    
+def next_video(driver):
+    js_skip_video = '''
+var goNext = document.querySelectorAll('#go-to-next-item')[0];
+var clickEvent  = document.createEvent ('MouseEvents');
+clickEvent.initEvent ('click', true, true);
+
+// avançar pro próximo vídeo
+goNext.dispatchEvent (clickEvent);
+//goNext.click();
+    '''
+    driver.execute_script(js_skip_video)
+def back_video(driver):
+    js_back_video = '''
+var goPrevious = document.querySelectorAll('#go-to-previous-item')[0];
+var clickEvent  = document.createEvent ('MouseEvents');
+clickEvent.initEvent ('click', true, true);
+
+// voltar pro video anterior
+goPrevious.dispatchEvent (clickEvent);
+//goPrevious.click();
+    '''
+    driver.execute_script(js_back_video)
 
 def toggle_video_subtitles(driver):
     js_toggle_subtitles = '''
@@ -357,11 +404,13 @@ def start_keyboard_shortcuts(driver):
     keyboard.add_hotkey('shift+-', lambda: decrease_video_speed(driver))
     keyboard.add_hotkey('shift+left', lambda: rewind_video(driver))
     keyboard.add_hotkey('shift+right', lambda: fast_forward_video(driver))
-    keyboard.add_hotkey('shift+end', lambda: driver.execute_script("document.querySelector('#go-to-next-item').click();"))
-    keyboard.add_hotkey('shift+home', lambda: driver.execute_script("document.querySelector('#go-to-previous-item').click();"))
+    keyboard.add_hotkey('shift+end', lambda: back_video(driver))
+    keyboard.add_hotkey('shift+home', lambda: next_video(driver))
+    # keyboard.add_hotkey('shift+end', lambda: driver.execute_script("document.querySelector('#go-to-next-item')?.click();"))
+    # keyboard.add_hotkey('shift+home', lambda: driver.execute_script("document.querySelector('#go-to-previous-item')?.click();"))
     keyboard.add_hotkey('shift+k', lambda: toggle_video_subtitles(driver))
 
-    keyboard.wait('esc')
+    keyboard.wait('ctrl+shift+esc')
 
 def main():
     driver = setup_driver()
