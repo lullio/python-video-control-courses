@@ -1,0 +1,7 @@
+[34620:34620:0709/201334.290839:WARNING:chrome_main_delegate.cc(742)] This is Chrome version 126.0.6478.126 (not a warning)
+[34620:34620:0709/201334.421958:INFO:chrome_browser_cloud_management_controller.cc(196)] No machine level policy manager exists.
+[34620:34620:0709/201334.483682:WARNING:browser_management_service.cc(128)] EnterpriseLogoUrl fetch failed with error code -1 and MIME type 
+[34620:34620:0709/201334.497109:WARNING:bluez_dbus_manager.cc(248)] Floss manager not present, cannot set Floss enable/disable.
+[34620:34620:0709/201334.613121:ERROR:object_proxy.cc(576)] Failed to call method: org.freedesktop.ScreenSaver.GetActive: object_path= /org/freedesktop/ScreenSaver: org.freedesktop.DBus.Error.NotSupported: This method is not implemented
+[34672:34672:0709/201334.657936:WARNING:vaapi_wrapper.cc(1524)] Skipping nVidia device named: nvidia-drm
+[34620:34620:0709/202708.173566:WARNING:pref_notifier_impl.cc(41)] Pref observer for media_router.cast_allow_all_ips found at shutdown.

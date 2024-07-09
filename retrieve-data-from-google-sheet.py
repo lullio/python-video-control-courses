@@ -1,3 +1,6 @@
+import os
+import platform
+
 import webbrowser
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
@@ -16,16 +19,36 @@ import re
 import time
 import threading
 
+
+def kill_chrome_processes():
+    if platform.system() == 'Linux':
+        os.system('pkill -f chrome')
+    elif platform.system() == 'Windows':
+        os.system('taskkill /im chrome.exe /f')
+
 # Configuração do serviço do WebDriver, driver google chrome
 def setup_driver():
+    # Encerrar processos existentes do Chrome
+    kill_chrome_processes()
+    
     service = Service(ChromeDriverManager().install())
     # Configuração do navegador Chrome
     options = webdriver.ChromeOptions()
     
     # Abrir navegador maximizado
     options.add_argument("--start-maximized")
-    # Diretório do perfil padrão
-    options.add_argument("--user-data-dir=C:/Users/Felipe/AppData/Local/Google/Chrome/User Data")
+    # Detectar o sistema operacional e definir o diretório de dados do usuário do Chrome
+    if os.name == 'nt':  # Windows
+        options.add_argument("--user-data-dir=C:/Users/Felipe/AppData/Local/Google/Chrome/User Data")
+        options.add_argument("--profile-directory=Default")  # Ajuste se necessário
+    elif os.name == 'posix':  # Linux (inclui Pop!_OS)
+        options.add_argument("--user-data-dir=/home/felipe/.config/google-chrome")
+        options.add_argument("--profile-directory=Profile 4")  # Ajuste se necessário
+    # Diretório do perfil padrão chrome no windows
+    #options.add_argument("--user-data-dir=C:/Users/Felipe/AppData/Local/Google/Chrome/User Data")
+    # Diretório do perfil padrão chrome no popos
+    #options.add_argument("--user-data-dir=/home/felipe/.config/google-chrome/Profile 4") # PopOS perfil propz
+    
     options.add_argument("--profile-directory=Default")
     options.add_argument("--disable-blink-features=AutomationControlled")
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
@@ -80,6 +103,15 @@ def get_data_from_google_sheet(url_data, driver):
     root = tk.Tk()
     root.title("Gerenciador de Cursos - Felipe")
     root.attributes('-topmost', True)
+    
+    # Configurar a fonte para os itens da Treeview
+    style = ttk.Style()
+    # style.configure("Treeview", font=("Helvetica", 12))  # Aumentar o tamanho da fonte
+    # style.configure("Treeview.Heading", font=("Helvetica", 14, "bold"))  # Fonte maior para cabeçalhos
+
+    # Configurar o espaçamento das linhas
+    style.configure("Treeview", rowheight=40)  # Aumentar a altura das linhas
+
     
     # Criação da barra de menu
     menu_bar = tk.Menu(root)
@@ -140,10 +172,11 @@ def get_data_from_google_sheet(url_data, driver):
     # Ajustando a largura das colunas
     for col in tree["columns"]:
         # Define largura mínima e colocar o conteúdo na esquerda(="w") ou centraliza conteúdo(CENTER)
-        tree.column(col, width=1, minwidth=1, anchor="w")
+        tree.column(col, width=1, minwidth=0, anchor="w")
         # Centraliza o texto do cabeçalho
         tree.heading(col, anchor="w")
-    tree.column(1, width=400, minwidth=400, anchor="w")
+    tree.column(0, width=100, minwidth=100, anchor="w")
+    tree.column(1, width=800, minwidth=780, anchor="w")
 
     frame = tk.Frame(root)
     frame.pack(padx=5, pady=10)
