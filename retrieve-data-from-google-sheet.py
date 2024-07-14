@@ -110,7 +110,8 @@ def get_data_from_google_sheet(url_data, driver):
     # style.configure("Treeview.Heading", font=("Helvetica", 14, "bold"))  # Fonte maior para cabeçalhos
 
     # Configurar o espaçamento das linhas
-    style.configure("Treeview", rowheight=40)  # Aumentar a altura das linhas
+    if os.name == 'posix': # somente no Linux
+        style.configure("Treeview", rowheight=40)  # Aumentar a altura das linhas
 
     
     # Criação da barra de menu
@@ -175,8 +176,12 @@ def get_data_from_google_sheet(url_data, driver):
         tree.column(col, width=1, minwidth=0, anchor="w")
         # Centraliza o texto do cabeçalho
         tree.heading(col, anchor="w")
-    tree.column(0, width=100, minwidth=100, anchor="w")
-    tree.column(1, width=800, minwidth=780, anchor="w")
+    if os.name == "nt": # somente no windows
+        tree.column(0, width=50, minwidth=50, anchor="w")
+        tree.column(1, width=350, minwidth=350, anchor="w")
+    elif os.name == 'posix': # somente no linux
+        tree.column(0, width=100, minwidth=100, anchor="w")
+        tree.column(1, width=800, minwidth=780, anchor="w")
 
     frame = tk.Frame(root)
     frame.pack(padx=5, pady=10)
