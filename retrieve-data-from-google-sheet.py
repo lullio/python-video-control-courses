@@ -4,6 +4,7 @@ import platform
 import webbrowser
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
+
 from webdriver_manager.chrome import ChromeDriverManager
 
 import requests
@@ -25,13 +26,31 @@ def kill_chrome_processes():
         os.system('pkill -f chrome')
     elif platform.system() == 'Windows':
         os.system('taskkill /im chrome.exe /f')
+        
 
 # Configuração do serviço do WebDriver, driver google chrome
 def setup_driver():
     # Encerrar processos existentes do Chrome
     kill_chrome_processes()
     
-    service = Service(ChromeDriverManager().install())
+    # Instalar e configurar o serviço do ChromeDriver
+    # driver_path = ChromeDriverManager().install()
+    # print(f"ChromeDriver path: {driver_path}")  # Debug: Verifique o caminho do ChromeDriver
+    # service = Service(driver_path)
+    # service = Service(ChromeDriverManager().install())
+    
+    # Solve: OSError: [WinError 193] %1 is not a valid Win32 application
+    # https://stackoverflow.com/questions/78796828/i-got-this-error-oserror-winerror-193-1-is-not-a-valid-win32-application
+    
+    # Instalar e configurar o serviço do ChromeDriver
+    chrome_install = ChromeDriverManager().install()
+    
+    folder = os.path.dirname(chrome_install)
+    chromedriver_path = os.path.join(folder, "chromedriver.exe")
+
+    service = Service(chromedriver_path)
+    
+    
     # Configuração do navegador Chrome
     options = webdriver.ChromeOptions()
     
@@ -96,6 +115,7 @@ def get_data_from_google_sheet(url_data, driver):
 
     # Lê o conteúdo CSV retornado pela API do Google Sheets
     csv_data = response.text
+    print(csv_data)
     # Utiliza o módulo csv para ler os dados CSV
     csv_reader = csv.reader(csv_data.splitlines())
 
@@ -146,20 +166,29 @@ def get_data_from_google_sheet(url_data, driver):
     root.config(menu=menu_bar)
 
      # Criando uma ListView com scroll vertical
-    tree = ttk.Treeview(root, columns=("col1", "col2", "col3", "col4", "col5", "col6", "col7"), show="headings")
+    tree = ttk.Treeview(root, columns=("col1", "col2", "col3", "col4", "col5", "col6", "col7", "col8"), show="headings")
     tree.heading("col1", text="Index")
     tree.heading("col2", text="Cursos")
     tree.heading("col3", text="URL")
     tree.heading("col4", text="Categorias")
     tree.heading("col5", text="Plataforma")
     tree.heading("col6", text="URL Notion")
-    tree.heading("col7", text="Coluna 7")
+    tree.heading("col7", text="É Favorito")
+    tree.heading("col8", text="Em Andamento")
+    # tree.heading("col9", text="Avaliação do Curso")
+    # tree.heading("col10", text="Carga Horária(h)")
     tree.pack(fill="both", expand=True)
     
     # Lista para armazenar todas as linhas do CSV
     all_rows = []
     # Conjunto para armazenar valores únicos da coluna 4 (categorias dos cursos)
     unique_col4_values = set()
+    # Listas para armazenar linhas com True nas colunas 6(favorito) e 7(em andamento)
+    favorites_rows = []
+    in_progress_rows = []
+    # Variáveis para verificar se existem valores True nas colunas 6 e 7
+    favorites_exist = False
+    in_progress_exist = False
 
     # Itera sobre as linhas do CSV
     for row in csv_reader:
@@ -169,6 +198,27 @@ def get_data_from_google_sheet(url_data, driver):
         all_rows.append(row)
         # salvar os valores da coluna 4 na lista unique_col4_values
         unique_col4_values.add(row[3])
+        
+        # Verificar se a linha tem pelo menos 8 elementos
+        if len(row) > 7:
+            if row[6].lower() == 'true':
+                favorites_rows.append(row)
+                favorites_exist = True
+            if row[7].lower() == 'true':
+                in_progress_rows.append(row)
+                in_progress_exist = True
+        else:
+            print("A linha não tem mais de 7 colunas, verifique a url da planilha e altere o range")
+        # Ajustar os valores para o filtro do ComboBox
+        if favorites_exist:
+            unique_col4_values.add("Favoritos")
+        if in_progress_exist:
+            unique_col4_values.add("Em Andamento")
+            
+        if favorites_exist:
+            unique_col4_values.add("Favoritos")
+        if in_progress_exist:
+            unique_col4_values.add("Em Andamento")
         
     # Ajustando a largura das colunas
     for col in tree["columns"]:
@@ -190,9 +240,14 @@ def get_data_from_google_sheet(url_data, driver):
     col4_filter_label = tk.Label(frame, text="Filtrar por Categoria:")
     col4_filter_label.grid(row=0, column=0, padx=(0, 10), sticky="w", pady=10)
 
-    col4_values = sorted(list(unique_col4_values))
+    # Atualiza a lista de valores do ComboBox
+    col4_values = sorted(list(unique_col4_values)) 
     col4_filter_var = tk.StringVar(root)
-    col4_filter_var.set("Todos") # Define o valor padrão como "Todos"
+    
+    # Define o valor padrão do combobox como "Em Andamento"
+    col4_filter_var.set("Em Andamento") 
+    
+
     col4_filter_dropdown = ttk.Combobox(frame, textvariable=col4_filter_var, values=["Todos"] + col4_values, state="readonly", width=27)
     col4_filter_dropdown.grid(row=0, column=1, sticky="w")
 
@@ -211,6 +266,12 @@ def get_data_from_google_sheet(url_data, driver):
         if selected_value == "Todos":
             for row in all_rows:
                 tree.insert("", "end", values=row)
+        elif selected_value == "Favoritos":
+                for row in favorites_rows:
+                    tree.insert("", "end", values=row)
+        elif selected_value == "Em Andamento":
+                for row in in_progress_rows:
+                    tree.insert("", "end", values=row)                
         else:
             # Filtra as linhas com base no valor selecionado na coluna 4
             filtered_rows = [row for row in all_rows if row[3] == selected_value]
@@ -218,6 +279,8 @@ def get_data_from_google_sheet(url_data, driver):
                 tree.insert("", "end", values=row)
     # Liga o evento de seleção do combobox
     col4_filter_dropdown.bind("<<ComboboxSelected>>", filter_data_with_combobox)
+    # Atualiza a Treeview com base no filtro padrão
+    filter_data_with_combobox()
 
     def filter_data_with_search(event=None):
         query = search_var.get()
@@ -453,7 +516,7 @@ def start_keyboard_shortcuts(driver):
 def main():
     driver = setup_driver()
     # URL da planilha do Google Sheets
-    url_data = "https://docs.google.com/spreadsheets/d/1Fg4cP6VEjQ5Ke8LCTSo88dUdZlc1az2RpBC6Bu6YuSw/gviz/tq?tqx=out:csv&range=A2:G80&sheet=Cursos"
+    url_data = "https://docs.google.com/spreadsheets/d/1Fg4cP6VEjQ5Ke8LCTSo88dUdZlc1az2RpBC6Bu6YuSw/gviz/tq?tqx=out:csv&range=A2:H150&sheet=Cursos"
 
     # Inicie a GUI do Tkinter em uma thread separada
     gui_thread = threading.Thread(target=get_data_from_google_sheet, args=(url_data, driver))
