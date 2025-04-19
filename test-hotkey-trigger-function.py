@@ -1,10 +1,11 @@
 import keyboard
 
-0
+def minha_funcao():
+    print("Hotkey pressionada: CTRL+I")
 
 # Função para associar a hotkey
 def associar_hotkey():
-    keyboard.add_hotkey('ctrl+i', minha_funcao)
+    keyboard.add_hotkey('ctrl+alt+x', minha_funcao)
 
 # Associar a hotkey quando o script é executado
 associar_hotkey()
